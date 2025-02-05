@@ -12,6 +12,7 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.View.OnTouchListener
 import androidx.lifecycle.ViewTreeLifecycleOwner
+import com.misterioesf.gamex.model.Point
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
@@ -50,7 +51,7 @@ class JoyStick : View {
 //        return (1 / sqrt(x * x + y * y))
     }
 
-    fun getNewDirectionVector(): Pair<Float, Float> {
+    fun getNewDirectionVector(): Point {
         val dx = x - centralX
         val dy = y - centralY
 
@@ -59,7 +60,7 @@ class JoyStick : View {
         val vx = dx * normal
         val vy = dy * normal
 
-        return Pair(vx, vy)
+        return Point(vx, vy)
     }
 
     fun getMovementX(): Float {
@@ -78,7 +79,7 @@ class JoyStick : View {
         paint.color = Color.WHITE
 
         if (event == null) {
-            moveUpdateListener?.onPositionUpdate(Pair(0f, 0f))
+            moveUpdateListener?.onPositionUpdate(Point(0f, 0f))
             return
         }
 
@@ -132,10 +133,28 @@ class JoyStick : View {
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        paint.color = Color.RED
-        canvas?.drawCircle(centralX, centralY, radius, paint)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 10f
         paint.color = Color.WHITE
-        canvas?.drawCircle(x, y, 50f, paint)
+        canvas?.drawCircle(centralX, centralY, radius - 10, paint)
+
+        paint.style = Paint.Style.FILL
+
+        paint.color = Color.WHITE
+        paint.alpha = 100
+        canvas?.drawCircle(centralX, centralY, radius - 10, paint)
+
+        paint.style = Paint.Style.STROKE
+        paint.color = Color.GRAY
+        paint.strokeWidth = 5f
+        canvas?.drawCircle(x, y, 45f, paint)
+
+
+        paint.style = Paint.Style.FILL
+
+        paint.color = Color.WHITE
+        paint.alpha = 200
+        canvas?.drawCircle(x, y, 45f, paint)
 //        paint.color = Color.WHITE
 //        canvas?.drawCircle(widthC - 50f, 150F, 150f, paint)
 //        paint.color = Color.GREEN
@@ -143,15 +162,4 @@ class JoyStick : View {
 //        paint.color = Color.BLUE
 //        canvas?.drawCircle(150F, heightC - 150F, 150f, paint)
     }
-
-//
-//    override fun onTouch(p0: View?, event: MotionEvent?): Boolean {
-//        when {
-//            event?.action == MotionEvent.ACTION_DOWN -> {
-//                Log.e("W", "touch x = ${event?.x} y = ${event?.y}")
-//            }
-//        }
-//
-//        return true
-//    }
 }

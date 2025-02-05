@@ -11,6 +11,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.widget.LinearLayout
+import com.misterioesf.gamex.model.Point
 
 class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     constructor(context: Context?) : super(context)
@@ -44,6 +45,7 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
 //        }
 //        viewsList.add(joyStick)
         player = Player(this.context)
+
         viewsList.add(player)
 
         thread = GameThread(holder, this)
@@ -86,7 +88,10 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     override fun update(event: String?, data: Any?) {
        // Log.e("GAME", "UPDATE")
         when (event) {
-            "vector" -> player.update(data as Pair<Float, Float>)
+            "vector" -> {
+                val point = data as Point
+                player.update(point)
+            }
         }
     }
 
