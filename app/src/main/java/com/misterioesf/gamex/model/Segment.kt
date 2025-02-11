@@ -4,18 +4,19 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import android.view.View
 
 class Segment(startPos: Point, context: Context): View(context) {
-    var posX = startPos.x
-    var posY = startPos.y
+    var position = startPos
     var radius = 50f
     var i = -1
     val paint = Paint()
 
     fun update(point: Point) {
-        posX = point.x
-        posY = point.y
+        position = point
+//        position.x = point.x
+//        position.y = point.y
     }
 
     override fun draw(canvas: Canvas?) {
@@ -23,11 +24,17 @@ class Segment(startPos: Point, context: Context): View(context) {
         // draw body
         paint.color = Color.GREEN
         paint.style = Paint.Style.FILL
-        canvas?.drawCircle(posX, posY, radius, paint)
+        canvas?.drawCircle(position.x, position.y, radius, paint)
 
         //  draw stroke
         paint.color =  Color.RED
         paint.style = Paint.Style.STROKE
-        canvas?.drawCircle(posX, posY, radius, paint)
+        canvas?.drawCircle(position.x, position.y, radius, paint)
     }
+
+    override fun toString(): String {
+        return "Segment(position=$position, radius=$radius, i=$i, paint=$paint)"
+    }
+
+
 }

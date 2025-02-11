@@ -15,14 +15,13 @@ class PlayerPath(var pathMaxSize: Int, context: Context): View(context) {
     var prev: Point? = null
 
     fun addCoordinate(point: Point) {
+        prev = current
+        current = point
         if (prev != null && current != null && prev != current) {
             if (pathMaxSize == path.size)
                 path.removeLast()
             path.addFirst(point)
         }
-        prev = current
-        current = point
-       // Log.e("PATh", "add size = ${point.toString()}")
     }
 
     override fun draw(canvas: Canvas?) {

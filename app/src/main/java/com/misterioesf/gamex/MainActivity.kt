@@ -5,6 +5,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import com.misterioesf.gamex.model.Event
 import com.misterioesf.gamex.model.Point
 
 class MainActivity : AppCompatActivity() {
@@ -15,44 +16,23 @@ class MainActivity : AppCompatActivity() {
     private val moveUpdateListener = object : MoveUpdateListener {
         override fun onPositionUpdate(movementVector: Point)  {
             subscribeHolder?.let {
-                it.publish("vector", movementVector)
+                it.publish(Event.POSITION, movementVector)
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN)
-
-
 
         supportActionBar?.hide()
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
-        actionBar?.hide()
 
-
-        if (supportActionBar != null) {
-            supportActionBar!!.hide()
-        }
-        window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_FULLSCREEN)
-
-       // gameView = GameView(this)
-//        setContentView(gameView)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         subscribeHolder = SubscribeHolder()
         gameView = findViewById<GameView>(R.id.surfaceView)
         subscribeHolder?.let {
-            it.subscribe("vector", gameView)
+            it.subscribe(Event.POSITION, gameView)
         }
-
-        //gameView.x = 100f
 
         val joyStick = findViewById<JoyStick>(R.id.joyStick)
         joyStick.setMoveUpdateListener(moveUpdateListener)
@@ -67,6 +47,4 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         gameView.pauseGame()
     }
-
-
 }

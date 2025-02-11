@@ -46,9 +46,7 @@ class JoyStick : View {
     }
 
     fun normalizeVector(): Float {
-//        Log.e("C", "$centralX y = $centralY")
         return (1 / sqrt((x - centralX) * (x - centralX) + (y - centralY) * (y - centralY)))
-//        return (1 / sqrt(x * x + y * y))
     }
 
     fun getNewDirectionVector(): Point {
@@ -94,7 +92,6 @@ class JoyStick : View {
             y = event?.y!!
         }
 
-//            Log.e("W", " x = ${x} y = ${y} xrr = ${getMovementX()} yr = ${getMovementY()}")
         moveUpdateListener?.onPositionUpdate(getNewDirectionVector())
         invalidate()
 
@@ -104,7 +101,6 @@ class JoyStick : View {
 
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-//                Log.e("W", "touch x = ${event?.x} y = ${event?.y}")
                 upd(event)
                 return true
             }
@@ -149,17 +145,10 @@ class JoyStick : View {
         paint.strokeWidth = 5f
         canvas?.drawCircle(x, y, 45f, paint)
 
-
         paint.style = Paint.Style.FILL
 
         paint.color = Color.WHITE
         paint.alpha = 200
         canvas?.drawCircle(x, y, 45f, paint)
-//        paint.color = Color.WHITE
-//        canvas?.drawCircle(widthC - 50f, 150F, 150f, paint)
-//        paint.color = Color.GREEN
-//        canvas?.drawCircle(widthC - 50f, heightC - 150F, 150f, paint)
-//        paint.color = Color.BLUE
-//        canvas?.drawCircle(150F, heightC - 150F, 150f, paint)
     }
 }
