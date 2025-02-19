@@ -3,13 +3,14 @@ package com.misterioesf.gamex
 import android.graphics.Canvas
 import android.util.Log
 import android.view.SurfaceHolder
+import java.util.concurrent.atomic.AtomicBoolean
 
 class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView: GameView) : Thread() {
 
-    var running = false
+    var running = AtomicBoolean(false)
 
     override fun run() {
-        while (running) {
+        while (running.get()) {
             val canvas: Canvas? = surfaceHolder.lockCanvas()
             if (canvas != null) {
                 if (gameView.apple == null)
@@ -27,5 +28,13 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
                 e.printStackTrace()
             }
         }
+    }
+
+    fun resumeThread() {
+        running.set(true)
+    }
+
+    fun stopThread() {
+        running.set(false   )
     }
 }

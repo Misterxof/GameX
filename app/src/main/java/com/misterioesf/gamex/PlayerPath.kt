@@ -4,11 +4,10 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
 import android.view.View
 import com.misterioesf.gamex.model.Point
 
-class PlayerPath(var pathMaxSize: Int, context: Context): View(context) {
+class PlayerPath(var pathMaxSize: Int, context: Context) : View(context) {
     val path = ArrayDeque<Point>(pathMaxSize)
     var paint = Paint()
     var current: Point? = null
@@ -20,6 +19,7 @@ class PlayerPath(var pathMaxSize: Int, context: Context): View(context) {
         if (prev != null && current != null && prev != current) {
             if (pathMaxSize == path.size)
                 path.removeLast()
+
             path.addFirst(point)
         }
     }
@@ -27,7 +27,7 @@ class PlayerPath(var pathMaxSize: Int, context: Context): View(context) {
     override fun draw(canvas: Canvas?) {
         super.draw(canvas)
 
-        canvas?.drawRect(100f,100f,200f,200f,paint)
+        canvas?.drawRect(100f, 100f, 200f, 200f, paint)
         paint.color = Color.BLUE
         paint.style = Paint.Style.STROKE
         if (path.isNotEmpty() && path.size > 1) {
