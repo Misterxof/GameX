@@ -77,6 +77,8 @@ class MainActivity : AppCompatActivity() {
                 Log.e("Tt", "PUB")
                 it.publish(Event.COLLISION, 0)
             }
+//            client?.send("Hello")
+//            Log.e("MAIN", client?.connection.toString())
         }
 
         initServer()
@@ -114,6 +116,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        TODO()
+        server?.stop()
+        client?.close()
     }
 }

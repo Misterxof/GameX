@@ -8,16 +8,15 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import androidx.appcompat.app.AlertDialog
 import com.misterioesf.gamex.model.Apple
 import com.misterioesf.gamex.model.Collision
 import com.misterioesf.gamex.model.Event
 import com.misterioesf.gamex.model.GameObject
+import com.misterioesf.gamex.model.GameObjectController
 import com.misterioesf.gamex.model.Point
 import com.misterioesf.gamex.model.Rect
-import com.misterioesf.gamex.model.ScreenPart
 import com.misterioesf.gamex.model.TestObject
-import kotlin.random.Random
+import com.misterioesf.gamex.model.Walls
 
 class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     constructor(context: Context?) : super(context)
@@ -30,26 +29,22 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     private var speedX: Float = 5f
     private var speedY: Float = 5f
     private lateinit var player: Player
-    private var gameObjects = mutableListOf<GameObject>()
+    private lateinit var gameObjectController: GameObjectController
     private val eventSubscriber = SubscribeHolder()
     private var gameEventListener: GameEventListener? = null
     var apple: Apple? = null
     val paint = Paint()
-    private val gameWidth = 2000f
-    private val gameHeight = 1000f
+    private val mapWidth = 2000f
+    private val mapHeight = 1000f
     private var vecX = 0f
     private var vecY = 0f
     private lateinit var rect: Rect
-    private lateinit var topWall: Rect
-    private lateinit var bottomWall: Rect
-    private lateinit var leftWall: Rect
-    private lateinit var rightWall: Rect
-    val t: TestObject
+    private var walls: Walls
     private var travel = Point(0f, 0f)
 
     init {
         holder.addCallback(this)
-        t = TestObject(Point(100f, 100f), context, 1)
+        walls = Walls(context)
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
@@ -58,11 +53,13 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
 //            Point(width / 2f, height / 2f), this.context)
         player = Player(Point(150f,150f),
             Point(width / 2f, height / 2f), this.context)
-        initWalls()
+        gameObjectController = GameObjectController.getInstance(player.offsetPoint, context)
+        walls.initWalls(mapWidth, mapHeight, player.offsetPoint)
+        rect = Rect(700f - vecX, 700f - vecY, 700f + 200f - vecX, 700f + 200f - vecY, player.offsetPoint, context)
         eventSubscriber.subscribe(Event.COLLISION, player)
 
-        gameObjects.add(player)
-        gameObjects.add(t)
+        gameObjectController.addGameObject(player)
+        gameObjectController.createGameObject<TestObject>(Point(100f, 100f), 1)
 
         thread = GameThread(holder, this)
         thread?.resumeThread()
@@ -98,34 +95,26 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
         thread?.join()
     }
 
-    fun initWalls() {
-        rect = Rect(700f - vecX, 700f - vecY, 700f + 200f - vecX, 700f + 200f - vecY, player.offsetPoint)
-        topWall = Rect(0f, 0f, gameWidth, 5f, player.offsetPoint)
-        bottomWall = Rect(0f, gameHeight, gameWidth, gameHeight - 5f, player.offsetPoint)
-        leftWall = Rect(0f, 0f, 5f, gameHeight, player.offsetPoint)
-        rightWall = Rect(gameWidth, 0f, gameWidth - 5f, gameHeight, player.offsetPoint)
-    }
-
     fun collisionChecker() {
         if (apple != null) {
-            val playerPos = player.position
-            val applePos = apple!!.position
+            val playerPos = player.positionScreen
+            val applePos = apple!!.positionScreen
 
             val dist = getDistance(playerPos, applePos)
 
             if (dist <= player.radius + apple!!.radius) {
                 eventSubscriber.publish(Event.COLLISION, Collision.HEALS)
-                gameObjects.remove(apple as GameObject)
+                gameObjectController.removeGameObject(apple as GameObject)
                 apple = null
                 appleSpawn()
             }
 
-            if (player.positionHistory.x - player.radius < 0 || player.positionHistory.x + player.radius > gameWidth) {
+            if (player.positionMap.x - player.radius < 0 || player.positionMap.x + player.radius > mapWidth) {
                 gameEventListener?.onGameOver()
                 pauseGame()
             }
 
-            if (player.positionHistory.y - player.radius < 0 || player.positionHistory.y + player.radius > gameHeight) {
+            if (player.positionMap.y - player.radius < 0 || player.positionMap.y + player.radius > mapHeight) {
                 gameEventListener?.onGameOver()
                 pauseGame()
             }
@@ -134,18 +123,10 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
 
     fun appleSpawn() {
         if (apple == null) {
-            val playerPart = getScreenPart(player.positionHistory, gameWidth.toInt(), gameHeight.toInt())
-            val newPosition = randomPart(playerPart, gameWidth.toInt(), gameHeight.toInt())
-            newPosition.x += player.moveHistory.x
-            newPosition.y += player.moveHistory.y
-            newPosition.x += player.offsetPoint.x
-            newPosition.y += player.offsetPoint.y
+            val playerPart = getScreenPart(player.positionMap, mapWidth.toInt(), mapHeight.toInt())
+            val newPosition = randomPart(playerPart, mapWidth.toInt(), mapHeight.toInt())
 
-            apple = Apple(newPosition, context)
-            gameObjects.add(apple!!)
-            Log.e("GAME", "SPAWN ${apple.toString()}")
-            Log.e("GAME", "SPAWN w = $gameWidth h = $gameHeight")
-            Log.e("GAME", "SPAWN x = ${player.positionHistory.x} y = ${player.positionHistory.y}")
+            apple = gameObjectController.createGameObject<Apple>(newPosition)
         }
     }
 
@@ -157,23 +138,17 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
         when (event) {
             Event.POSITION -> {
                 val point = data as Point
-//                player.updatePosition(point)  // if update here values are incorrect
+
                 vecX = point.x * player.speed
                 vecY = point.y * player.speed
-
-
             }
 
             Event.COLLISION -> {
-               // val test = TestObject(Point(100f, 100f), context)
-                val test2 = TestObject(Point(100f + player.moveHistory.x, 100f + player.moveHistory.y), context, 0)
-                val test = TestObject(Point(100f + topWall.left, 100f + topWall.top), context, 0)
                 Log.e("GAME", "1x = ${player.moveHistory.x} y = ${player.moveHistory.y}")
-                Log.e("GAME", "2x = ${player.positionHistory.x} y = ${player.positionHistory.y}")
+                Log.e("GAME", "2x = ${player.positionMap.x} y = ${player.positionMap.y}")
                 Log.e("GAME", "3x = ${travel.x} y = ${travel.y}")
-                Log.e("GAME", "4x = ${player.positionHistory.x} y = ${player.positionHistory.y}")
-               // gameObjects.add(test)
-                gameObjects.add(test2)
+                Log.e("GAME", "4x = ${player.positionMap.x} y = ${player.positionMap.y}")
+                gameObjectController.createGameObject<TestObject>(Point(100f, 100f), 0)
             }
         }
     }
@@ -197,49 +172,29 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
         travel.y -= vecY
         player.updatePosition(Point(vecX / player.speed, vecY / player.speed))
 
-        topWall.update(vecX, vecY)
-        bottomWall.update(vecX, vecY)
-        leftWall.update(vecX, vecY)
-        rightWall.update(vecX, vecY)
-    }
-
-    fun updateAll() {
-        gameObjects.forEach {
-            it.updatePosition(vecX, vecY)
-        }
-    }
-
-    fun drawRectObject(canvas: Canvas, rect: Rect){
-        canvas.drawRect(rect.left, rect.top, rect.right, rect.bottom, paint)
+        walls.update(vecX, vecY)
     }
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
         canvas.drawColor(Color.BLACK)
 
-        updateAll()
+        gameObjectController.update(vecX, vecY)
 
         paint.color = Color.WHITE
         canvas.drawCircle(ballX, ballY, ballRadius, paint)
-        gameObjects.forEach { view -> view.draw(canvas) }
+        gameObjectController.draw(canvas)
 
         paint.color = Color.YELLOW
         rect.update(vecX, vecY)
 
         canvas.drawRect(rect.left, rect.top, rect.right, rect.bottom, paint)
 
-//        apple?.let { it.updateScreen(vecX, vecY) }
         if (apple != null) apple!!.draw(canvas)
 
-
-
         //  Game arena
-        paint.color = Color.LTGRAY
         updateWalls()
-        drawRectObject(canvas, topWall)
-        drawRectObject(canvas, bottomWall)
-        drawRectObject(canvas, leftWall)
-        drawRectObject(canvas, rightWall)
+        walls.draw(canvas)
 
         //  UI
         paint.color = Color.WHITE

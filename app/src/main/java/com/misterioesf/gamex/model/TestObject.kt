@@ -6,16 +6,17 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.icu.text.Transliterator
 
-class TestObject(pos: Point, context: Context, val i: Int): GameObject(context) {
+class TestObject(pos: Point, context: Context, val i: Int): GameObject(pos, context) {
     override var type: Type = Type.NEUTRAL
-
-    init {
-        position = pos
-    }
+    override lateinit var positionMap: Point
 
     override fun updatePosition(x: Float, y: Float) {
-        position.x -= x
-        position.y -= y
+        positionScreen.x -= x
+        positionScreen.y -= y
+    }
+
+    fun setPositionMapValue(position: Point) {
+        positionMap = position.copy()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -23,11 +24,11 @@ class TestObject(pos: Point, context: Context, val i: Int): GameObject(context) 
         if (i == 1){
             paint.color = Color.BLUE
             paint.style = Paint.Style.STROKE
-            canvas?.drawCircle(position.x, position.y, 50f, paint)
+            canvas?.drawCircle(positionScreen.x, positionScreen.y, 50f, paint)
 
         } else {
             paint.color = Color.WHITE
-            canvas?.drawCircle(position.x, position.y, 50f, paint)
+            canvas?.drawCircle(positionScreen.x, positionScreen.y, 50f, paint)
         }
     }
 }

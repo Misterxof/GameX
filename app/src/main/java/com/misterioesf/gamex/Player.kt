@@ -16,8 +16,9 @@ class Player(
     val startPos: Point,
     startScreenPos: Point,
     context: Context
-) : GameObject(context), Subscriber {
+) : GameObject(startScreenPos, context), Subscriber {
     override var type: Type = Type.PLAYER
+    override var positionMap: Point
 
     override fun updatePosition(x: Float, y: Float) {}
 
@@ -30,20 +31,18 @@ class Player(
     var nextSegmentConst = 14
     var nextSegmentId = nextSegmentConst
     val segments = mutableListOf<Segment>()
-    val positionHistory: Point
     val moveHistory: Point
     val prevMoveHistory: Point
     val offsetPoint: Point
 
     init {
-        position = startScreenPos
-        positionHistory = startPos.copy()
+        positionMap = startPos.copy()
         offsetPoint = Point(0f,0f)
-        offsetPoint.x = position.x - startPos.x
-        offsetPoint.y = position.y - startPos.y
+        offsetPoint.x = positionScreen.x - startPos.x
+        offsetPoint.y = positionScreen.y - startPos.y
         moveHistory = Point(0f, 0f)
         prevMoveHistory = Point(0f, 0f)
-        head = Segment(position, context)
+        head = Segment(positionScreen, context)
         playerPath = PlayerPath(nextSegmentConst + 1, this.context)
 
     }
@@ -51,21 +50,20 @@ class Player(
     fun getSize() = segments.size + 1
 
     fun getVectorX(): Float {
-        return position.x
+        return positionScreen.x
     }
 
     fun getVectorY(): Float {
-        return position.y
+        return positionScreen.y
     }
 
     fun move() {
         val pos = moveHistory.copy()
-        pos.x -= prevMoveHistory.x
-        pos.y -= prevMoveHistory.y
+        pos -= prevMoveHistory
         //  add position offset from 0,0
-        pos.x += position.x
-        pos.y += position.y
-        if (pos.x != position.x && pos.y != position.y) {
+        pos += positionScreen
+
+        if (pos.x != positionScreen.x && pos.y != positionScreen.y) {
             playerPath.path.forEach {
                 it.x += moveHistory.x - prevMoveHistory.x
                 it.y += moveHistory.y - prevMoveHistory.y
@@ -95,8 +93,8 @@ class Player(
     fun updatePosition(pair: Point) {
         vecX = pair.x
         vecY = pair.y
-        positionHistory.x += pair.x * speed
-        positionHistory.y += pair.y * speed
+        positionMap.x += pair.x * speed
+        positionMap.y += pair.y * speed
         prevMoveHistory.x = moveHistory.x
         prevMoveHistory.y = moveHistory.y
         moveHistory.x -= pair.x * speed

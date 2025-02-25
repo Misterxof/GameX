@@ -8,15 +8,12 @@ import android.util.Log
 import android.view.View
 import com.misterioesf.gamex.Subscriber
 
-class Apple(startPosition: Point, context: Context): GameObject(context), Subscriber {
+class Apple(startPosition: Point, context: Context): GameObject(startPosition, context), Subscriber {
     override var type: Type = Type.POWER
+    override lateinit var positionMap: Point
 
     var radius = 30f
     val paint = Paint()
-
-    init {
-        position = startPosition
-    }
 
     override fun update(event: Event, data: Any?) {
         when(event) {
@@ -26,19 +23,23 @@ class Apple(startPosition: Point, context: Context): GameObject(context), Subscr
     }
 
     override fun updatePosition(x: Float, y: Float) {
-        position.x -= x
-        position.y -= y
+        positionScreen.x -= x
+        positionScreen.y -= y
     }
 
     override fun draw(canvas: Canvas?) {
         super.draw(canvas)
 
         paint.color = Color.RED
-        canvas?.drawCircle(position.x, position.y, radius, paint)
+        canvas?.drawCircle(positionScreen.x, positionScreen.y, radius, paint)
+    }
+
+    fun setPositionMapValue(position: Point) {
+        positionMap = position.copy()
     }
 
     override fun toString(): String {
-        return "Apple(type=$type, position x = ${position.x} y = ${position.y})"
+        return "Apple(type=$type, position x = ${positionScreen.x} y = ${positionScreen.y})"
     }
 
 
