@@ -12,13 +12,14 @@ import com.misterioesf.gamex.model.Point
 import com.misterioesf.gamex.model.Segment
 import com.misterioesf.gamex.model.Type
 
-class Player(
-    val startPos: Point,
+open class Player(
+    startPos: Point,
     startScreenPos: Point,
+    var nextSegmentConst: Int,
     context: Context
 ) : GameObject(startScreenPos, context), Subscriber {
     override var type: Type = Type.PLAYER
-    override var positionMap: Point
+    override var positionMap: Point = Point(0f,0f)
 
     override fun updatePosition(x: Float, y: Float) {}
 
@@ -28,7 +29,7 @@ class Player(
     var vecY = 0f
     val playerPath: PlayerPath
     var head: Segment
-    var nextSegmentConst = 14
+   // var nextSegmentConst = 14
     var nextSegmentId = nextSegmentConst
     val segments = mutableListOf<Segment>()
     val moveHistory: Point
@@ -44,7 +45,6 @@ class Player(
         prevMoveHistory = Point(0f, 0f)
         head = Segment(positionScreen, context)
         playerPath = PlayerPath(nextSegmentConst + 1, this.context)
-
     }
 
     fun getSize() = segments.size + 1
@@ -57,7 +57,7 @@ class Player(
         return positionScreen.y
     }
 
-    fun move() {
+    open fun move() {
         val pos = moveHistory.copy()
         pos -= prevMoveHistory
         //  add position offset from 0,0
@@ -69,13 +69,8 @@ class Player(
                 it.y += moveHistory.y - prevMoveHistory.y
             }
             playerPath.addCoordinate(pos)
-            Log.e("EEMY", "Move player ${moveHistory.copy() - prevMoveHistory}")
         }
-//        position.x += vecX
-//        position.y += vecY
-//        head.update(position)
-//        playerPath.addCoordinate(position.copy())
-//
+
         segments.forEach {
             it.update(playerPath.path[it.i])
         }
@@ -91,7 +86,7 @@ class Player(
         }
     }
 
-    fun updatePosition(pair: Point) {
+    open fun updatePosition(pair: Point) {
         vecX = pair.x
         vecY = pair.y
         positionMap.x += pair.x * speed
@@ -128,7 +123,6 @@ class Player(
         var paint = Paint()
         paint.color = Color.GREEN
         paint.style = Paint.Style.FILL
-
 
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE

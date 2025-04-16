@@ -20,15 +20,6 @@ import com.misterioesf.gamex.model.Rect
 import com.misterioesf.gamex.model.TestObject
 import com.misterioesf.gamex.model.Type
 import com.misterioesf.gamex.model.Walls
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.sql.Date
-import java.time.Duration
-import java.time.Instant
 
 class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     constructor(context: Context?) : super(context)
@@ -83,7 +74,7 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
 
     fun restart() {
         player = Player(Point(150f,150f),
-            Point(width / 2f, height / 2f), this.context)
+            Point(width / 2f, height / 2f), 14, this.context)
         gameObjectController = GameObjectController.getInstance(player.offsetPoint, context)
         walls.initWalls(mapWidth, mapHeight, player.offsetPoint)
         rect = Rect(700f - vecX, 700f - vecY, 700f + 200f - vecX, 700f + 200f - vecY, player.offsetPoint, context)
@@ -154,7 +145,7 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
         val playerPart = getScreenPart(player.positionMap, mapWidth.toInt(), mapHeight.toInt())
         val newPosition = randomPart(playerPart, mapWidth.toInt(), mapHeight.toInt())
         val screenAndMapPos = gameObjectController.getScreenPositionAndMapPos(newPosition)
-        enemy = Enemy(newPosition, screenAndMapPos.first, context)
+        enemy = Enemy(newPosition, screenAndMapPos.first, 7, context)
         gameObjectController.addGameObject(enemy!!)
         eventSubscriber.subscribe(Event.COLLISION, enemy!!)
     }
