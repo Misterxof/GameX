@@ -1,6 +1,8 @@
 package com.misterioesf.gamex.model
 
-data class Point(var x: Float, var y: Float) {
+import java.io.Serializable
+
+data class Point(var x: Float, var y: Float): Serializable {
     operator fun plus(point: Point): Point {
         return Point(this.x + point.x, this.y + point.y)
     }
@@ -17,6 +19,10 @@ data class Point(var x: Float, var y: Float) {
     operator fun minusAssign(point: Point) {
         this.x -= point.x
         this.y -= point.y
+    }
+
+    companion object {
+        private const val serialVersionUID: Long = 1L
     }
 }
 

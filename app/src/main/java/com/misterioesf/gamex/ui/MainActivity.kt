@@ -1,4 +1,4 @@
-package com.misterioesf.gamex
+package com.misterioesf.gamex.ui
 
 import android.net.wifi.WifiManager
 import android.os.Bundle
@@ -8,8 +8,15 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.gson.Gson
+import com.misterioesf.gamex.GameEventListener
+import com.misterioesf.gamex.GameView
+import com.misterioesf.gamex.MoveUpdateListener
+import com.misterioesf.gamex.R
+import com.misterioesf.gamex.SubscribeHolder
 import com.misterioesf.gamex.model.Event
 import com.misterioesf.gamex.model.Point
+import com.misterioesf.gamex.model.Type
 import com.misterioesf.gamex.net.WebSocketClient
 import com.misterioesf.gamex.net.WebsocketServer
 import kotlinx.coroutines.CoroutineScope
@@ -17,22 +24,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.URI
-
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var gameView: GameView
     private var subscribeHolder: SubscribeHolder? = null
     private lateinit var server: WebsocketServer
-    private lateinit var client: WebSocketClient
+    private var client: WebSocketClient? = null
 
     private val moveUpdateListener = object : MoveUpdateListener {
         override fun onPositionUpdate(movementVector: Point)  {
             subscribeHolder?.let {
-                it.publish(Event.POSITION, movementVector)
+                it.publish(Event.POSITION, movementVector, Type.PLAYER)
             }
         }
     }
@@ -44,11 +49,19 @@ class MainActivity : AppCompatActivity() {
                 AlertDialog.Builder(this@MainActivity)
                     .setMessage("Game over")
                     .setPositiveButton("Restart") { d,id ->
-                        gameView.resumeGame()
+                        gameView.restart()
                         d.cancel()
                     }.setNegativeButton("No") { d, id ->
                         d.cancel()
                     }.show()
+            }
+        }
+
+        override fun sendMyPosition(position: Point) {
+            client?.let {
+                if (it.isOpen) {
+                    it.send(Gson().toJson(position))
+                }
             }
         }
     }
@@ -75,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         spawnButton.setOnClickListener {
             subscribeHolder?.let {
                 Log.e("Tt", "PUB")
-                it.publish(Event.COLLISION, 0)
+                it.publish(Event.COLLISION, 0, Type.NEUTRAL)
             }
 //            client?.send("Hello")
 //            Log.e("MAIN", client?.connection.toString())
@@ -100,7 +113,7 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Job() + Dispatchers.IO).launch {
             delay(5000)
             client = WebSocketClient(URI("ws://$address:8887"))
-            client.connect()
+            client?.connect()
         }
     }
 

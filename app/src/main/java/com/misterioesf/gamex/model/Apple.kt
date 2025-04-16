@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.misterioesf.gamex.Subscriber
@@ -15,7 +16,7 @@ class Apple(startPosition: Point, context: Context): GameObject(startPosition, c
     var radius = 30f
     val paint = Paint()
 
-    override fun update(event: Event, data: Any?) {
+    override fun update(event: Event, data: Any?, type: Type) {
         when(event) {
             Event.POSITION -> TODO()
             Event.COLLISION -> Log.e("APPLE", "COLLISION ${data.toString()}")
@@ -42,5 +43,9 @@ class Apple(startPosition: Point, context: Context): GameObject(startPosition, c
         return "Apple(type=$type, position x = ${positionScreen.x} y = ${positionScreen.y})"
     }
 
-
+    companion object: Creator {
+        override fun create(positionScreen: Point, context: Context, bundle: Bundle?): Apple {
+            return Apple(positionScreen, context)
+        }
+    }
 }

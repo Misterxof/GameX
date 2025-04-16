@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.icu.text.Transliterator
+import android.os.Bundle
 
 class TestObject(pos: Point, context: Context, val i: Int): GameObject(pos, context) {
     override var type: Type = Type.NEUTRAL
@@ -29,6 +30,14 @@ class TestObject(pos: Point, context: Context, val i: Int): GameObject(pos, cont
         } else {
             paint.color = Color.WHITE
             canvas?.drawCircle(positionScreen.x, positionScreen.y, 50f, paint)
+        }
+    }
+
+
+    companion object : Creator{
+        override fun create(positionScreen: Point, context: Context, bundle: Bundle?): TestObject {
+            val i = bundle?.getInt("i") ?: 0
+            return TestObject(positionScreen, context, i)
         }
     }
 }

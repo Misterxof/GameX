@@ -14,7 +14,8 @@ class Segment(startPos: Point, context: Context): View(context) {
     val paint = Paint()
 
     fun update(point: Point) {
-        position = point
+        position.x = point.x
+        position.y = point.y
     }
 
     override fun draw(canvas: Canvas?) {

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ui.MainActivity">
 
 
     <com.misterioesf.gamex.GameView
@@ -25,7 +25,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.misterioesf.gamex.JoyStick
+        <com.misterioesf.gamex.ui.JoyStick
             android:id="@+id/joyStick"
             android:layout_width="150dp"
             android:layout_height="150dp"

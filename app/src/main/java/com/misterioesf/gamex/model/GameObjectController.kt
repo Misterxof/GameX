@@ -2,16 +2,17 @@ package com.misterioesf.gamex.model
 
 import android.content.Context
 import android.graphics.Canvas
+import android.os.Bundle
 import android.view.View
 
 class GameObjectController private constructor(val screenOffset: Point, context: Context): View(context) {
     private var gameObjects = mutableListOf<GameObject>()
     val screenMapPositionChange: Point = Point(0f, 0f)
 
-    inline fun <reified T : GameObject> createGameObject(startPosition: Point, id: Int = 0): T? {
+    inline fun <reified T : GameObject> createGameObject(startPosition: Point, bundle: Bundle? = null): T? {
         val screenPosition = startPosition + screenOffset + screenMapPositionChange
         val mapPosition = startPosition + screenMapPositionChange
-        val gameObject = GameObjectFactory.createGameObject<T>(screenPosition, context, id)
+        val gameObject = GameObjectFactory.createGameObject<T>(screenPosition, context, bundle)
 
         gameObject?.let {
             gameObject.positionMap = mapPosition
@@ -19,6 +20,12 @@ class GameObjectController private constructor(val screenOffset: Point, context:
         }
 
         return gameObject
+    }
+
+    fun getScreenPositionAndMapPos(startPosition: Point): Pair<Point, Point> {
+        val screenPosition = startPosition + screenOffset + screenMapPositionChange
+        val mapPosition = startPosition + screenMapPositionChange
+        return screenPosition to mapPosition
     }
 
     fun addGameObject(gameObject: GameObject) {

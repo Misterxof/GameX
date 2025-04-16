@@ -15,9 +15,9 @@ class WebsocketServer(address: InetSocketAddress): WebSocketServer(address) {
     var isHosted = false
 
     override fun onOpen(conn: WebSocket?, handshake: ClientHandshake?) {
-        Log.e(WEBSOCKET_SERVER, "onOpen")
-        Log.e(WEBSOCKET_SERVER, "onOpen ${conn?.getRemoteSocketAddress()}")
-        Log.e(WEBSOCKET_SERVER, "onOpen ${conn?.toString()}")
+       // Log.e(WEBSOCKET_SERVER, "onOpen")
+       // Log.e(WEBSOCKET_SERVER, "onOpen ${conn?.getRemoteSocketAddress()}")
+      //  Log.e(WEBSOCKET_SERVER, "onOpen ${conn?.toString()}")
         conn?.let { connections.add(it) }
 
         if (!isHosted) {
@@ -31,8 +31,8 @@ class WebsocketServer(address: InetSocketAddress): WebSocketServer(address) {
     }
 
     override fun onMessage(conn: WebSocket?, message: String?) {
-        Log.e(WEBSOCKET_SERVER, "onMessage")
-        Log.e(WEBSOCKET_SERVER, message ?: "null")
+       // Log.e(WEBSOCKET_SERVER, "onMessage")
+       // Log.e(WEBSOCKET_SERVER, message ?: "null")
         if (conn == host) {
             client?.send(message)
         } else {

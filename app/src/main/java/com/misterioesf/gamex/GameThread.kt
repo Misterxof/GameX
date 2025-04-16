@@ -13,9 +13,8 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
         while (running.get()) {
             val canvas: Canvas? = surfaceHolder.lockCanvas()
             if (canvas != null) {
-                if (gameView.apple == null)
-                    gameView.appleSpawn()
-                else gameView.collisionChecker()
+                if (gameView.apple != null)
+                    gameView.collisionChecker()
 
                 gameView.updateBall()
                 gameView.draw(canvas)
@@ -35,6 +34,6 @@ class GameThread(private val surfaceHolder: SurfaceHolder, private val gameView:
     }
 
     fun stopThread() {
-        running.set(false   )
+        running.set(false)
     }
 }

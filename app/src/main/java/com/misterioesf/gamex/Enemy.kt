@@ -11,8 +11,9 @@ import com.misterioesf.gamex.model.GameObject
 import com.misterioesf.gamex.model.Point
 import com.misterioesf.gamex.model.Segment
 import com.misterioesf.gamex.model.Type
+import kotlin.math.sqrt
 
-class Player(
+class Enemy(
     val startPos: Point,
     startScreenPos: Point,
     context: Context
@@ -20,31 +21,30 @@ class Player(
     override var type: Type = Type.PLAYER
     override var positionMap: Point
 
-    override fun updatePosition(x: Float, y: Float) {}
-
     var speed = 7f
     var radius = 50f
     var vecX = 0f
     var vecY = 0f
     val playerPath: PlayerPath
     var head: Segment
-    var nextSegmentConst = 14
+    var nextSegmentConst = 7
     var nextSegmentId = nextSegmentConst
     val segments = mutableListOf<Segment>()
     val moveHistory: Point
     val prevMoveHistory: Point
     val offsetPoint: Point
+    var applePosition: Point? = null
+    var color = Color.RED
 
     init {
         positionMap = startPos.copy()
-        offsetPoint = Point(0f,0f)
+        offsetPoint = Point(0f, 0f)
         offsetPoint.x = positionScreen.x - startPos.x
         offsetPoint.y = positionScreen.y - startPos.y
         moveHistory = Point(0f, 0f)
         prevMoveHistory = Point(0f, 0f)
         head = Segment(positionScreen, context)
         playerPath = PlayerPath(nextSegmentConst + 1, this.context)
-
     }
 
     fun getSize() = segments.size + 1
@@ -68,12 +68,10 @@ class Player(
                 it.x += moveHistory.x - prevMoveHistory.x
                 it.y += moveHistory.y - prevMoveHistory.y
             }
-            playerPath.addCoordinate(pos)
-            Log.e("EEMY", "Move player ${moveHistory.copy() - prevMoveHistory}")
+            playerPath.addCoordinate(pos.copy())
+            head.update(positionScreen.copy())
         }
-//        position.x += vecX
-//        position.y += vecY
-//        head.update(position)
+
 //        playerPath.addCoordinate(position.copy())
 //
         segments.forEach {
@@ -100,20 +98,62 @@ class Player(
         prevMoveHistory.y = moveHistory.y
         moveHistory.x -= pair.x * speed
         moveHistory.y -= pair.y * speed
-//        Log.e("PLAYER", "Move ${moveHistory.x}, ${moveHistory.y}")
+
+        positionScreen.x += pair.x * speed
+        positionScreen.y += pair.y * speed
+
+//        Log.e("EEMY", "Move ${moveHistory.x}, ${moveHistory.y}")
 //        Log.e("PLAYER", "Move ${positionHistory.x + moveHistory.x}, ${positionHistory.y + moveHistory.y}")
     }
 
+    fun getNewDirectionVector() {
+        applePosition?.let {
+            val dx = applePosition!!.x - head.position.x
+            val dy = applePosition!!.y - head.position.y
+
+            val normal = 1 / sqrt(dx * dx + dy * dy)
+
+            val vx = dx * normal
+            val vy = dy * normal
+
+            updatePosition(Point(vx, vy))
+        }
+    }
+
+    fun setApplePos(position: Point) {
+        applePosition = position
+    }
+
+    override fun updatePosition(x: Float, y: Float) {
+        positionScreen.x -= x
+        positionScreen.y -= y
+
+        if (x != 0f || y != 0f) {
+            changeSegments(x, y)
+        }
+
+        getNewDirectionVector()
+        Log.e("ENEMY", "Pos updadtette x $x y $y")
+    }
+
+    fun changeSegments(x: Float, y: Float) {
+        playerPath.path.forEach {
+            it.x -= x
+            it.y -= y
+        }
+    }
+
     override fun update(event: Event, data: Any?, type: Type) {
-        when(event) {
+        when (event) {
             Event.POSITION -> TODO()
             Event.COLLISION -> {
-                if (type == Type.PLAYER) {
-                    when(data as Collision) {
+                if (type == Type.ENEMY) {
+                    when (data as Collision) {
                         Collision.HEALS -> {
-                            Log.e("PLAYER", "COLLISION ${data.toString()}")
+                            Log.e("ENEMY", "COLLISION ${data.toString()}")
                             addSegment()
                         }
+
                         Collision.HIT -> TODO()
                     }
                 }
@@ -124,17 +164,23 @@ class Player(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
+//        getNewDirectionVector()
         move()  // lags if moved to update
         var paint = Paint()
-        paint.color = Color.GREEN
+        paint.color = color
         paint.style = Paint.Style.FILL
-
 
         paint.color = Color.RED
         paint.style = Paint.Style.STROKE
-        canvas?.drawRect(getVectorX() - radius, getVectorY() - radius, getVectorX() + radius, getVectorY() + radius, paint)
+        canvas?.drawRect(
+            getVectorX() - radius,
+            getVectorY() - radius,
+            getVectorX() + radius,
+            getVectorY() + radius,
+            paint
+        )
 
-        for (i in segments.lastIndex downTo 0){
+        for (i in segments.lastIndex downTo 0) {
             segments[i].draw(canvas)
         }
         head.draw(canvas)

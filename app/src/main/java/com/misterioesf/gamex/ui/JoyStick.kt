@@ -1,4 +1,4 @@
-package com.misterioesf.gamex
+package com.misterioesf.gamex.ui
 
 import android.content.Context
 import android.graphics.Canvas
@@ -6,15 +6,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
-import android.view.DragEvent
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.View
-import android.view.View.OnTouchListener
-import androidx.lifecycle.ViewTreeLifecycleOwner
+import com.misterioesf.gamex.MoveUpdateListener
 import com.misterioesf.gamex.model.Point
-import kotlinx.coroutines.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
