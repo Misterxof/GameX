@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.Log
+import com.misterioesf.gamex.collisions.Collidable
 import com.misterioesf.gamex.model.Collision
 import com.misterioesf.gamex.model.Event
 import com.misterioesf.gamex.model.GameObject
@@ -16,10 +17,16 @@ open class Player(
     startPos: Point,
     startScreenPos: Point,
     var nextSegmentConst: Int,
-    context: Context
-) : GameObject(startScreenPos, context), Subscriber {
+    context: Context,
+    val onNewGameObject: (gameObject: GameObject) -> Unit
+) : GameObject(startScreenPos, context, onNewGameObject), Subscriber {
     override var type: Type = Type.PLAYER
     override var positionMap: Point = Point(0f,0f)
+    override val collisionType = Type.PLAYER
+    override val position = positionScreen
+    override val collisionRadius = 50f
+    override var isCollidable = true
+    override var gameObjects: MutableList<GameObject>? = mutableListOf()
 
     override fun updatePosition(x: Float, y: Float) {}
 
@@ -43,7 +50,7 @@ open class Player(
         offsetPoint.y = positionScreen.y - startPos.y
         moveHistory = Point(0f, 0f)
         prevMoveHistory = Point(0f, 0f)
-        head = Segment(positionScreen, context)
+        head = Segment(positionScreen, context, Type.PLAYER, false)
         playerPath = PlayerPath(nextSegmentConst + 1, this.context)
     }
 
@@ -76,11 +83,13 @@ open class Player(
         }
     }
 
-    fun addSegment() {
+    fun addSegment(type: Type) {
         if (((playerPath.path.lastIndex) / nextSegmentConst) > segments.size) {
-            val newSegment = Segment(playerPath.path[nextSegmentId], context)
+            val newSegment = Segment(playerPath.path[nextSegmentId], context, type, true)
             newSegment.i = nextSegmentId
             segments.add(newSegment)
+            gameObjects!!.add(newSegment)
+            onNewGameObject(newSegment)
             playerPath.pathMaxSize += nextSegmentConst
             nextSegmentId += nextSegmentConst
         }
@@ -106,13 +115,32 @@ open class Player(
                 if (type == Type.PLAYER) {
                     when(data as Collision) {
                         Collision.HEALS -> {
-                            Log.e("PLAYER", "COLLISION ${data.toString()}")
-                            addSegment()
+                        //    Log.e("PLAYER", "COLLISION ${data.toString()}")
+                            addSegment(Type.PLAYER_SEGMENT)
                         }
                         Collision.HIT -> TODO()
                     }
                 }
             }
+        }
+    }
+
+    override fun handleCollision(other: Collidable) {
+        Log.e("PLAYER", "COLLISION player 1 ${other.collisionType}")
+        when (other.collisionType) {
+            Type.ENEMY -> {
+                Log.e("PLAYER", "COLLISION player")
+            }
+            Type.HEALS -> {
+                Log.e("PLAYER", "COLLISION heals")
+            }
+            Type.WALL -> {
+                Log.e("PLAYER", "COLLISION WALL")
+            }
+            Type.ENEMY_SEGMENT -> {
+                Log.e("PLAYER", "COLLISION ENEMY SEGMETN")
+            }
+            else -> {}
         }
     }
 

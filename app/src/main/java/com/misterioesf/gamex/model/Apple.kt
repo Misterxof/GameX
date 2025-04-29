@@ -6,12 +6,16 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import com.misterioesf.gamex.Subscriber
+import com.misterioesf.gamex.collisions.Collidable
 
-class Apple(startPosition: Point, context: Context): GameObject(startPosition, context), Subscriber {
+class Apple(startPosition: Point, context: Context): GameObject(startPosition, context, null), Subscriber {
     override var type: Type = Type.POWER
     override lateinit var positionMap: Point
+    override val collisionType = Type.HEALS
+    override val collisionRadius = 30f
+    override var isCollidable = true
+    override var gameObjects: MutableList<GameObject>? = null
 
     var radius = 30f
     val paint = Paint()
@@ -26,6 +30,21 @@ class Apple(startPosition: Point, context: Context): GameObject(startPosition, c
     override fun updatePosition(x: Float, y: Float) {
         positionScreen.x -= x
         positionScreen.y -= y
+    }
+
+    override fun handleCollision(other: Collidable) {
+        when (other.collisionType) {
+            Type.ENEMY -> {
+                Log.e("PLAYER", "COLLISION apple")
+            }
+            Type.POWER -> {
+
+            }
+            Type.WALL -> {
+
+            }
+            else -> {}
+        }
     }
 
     override fun draw(canvas: Canvas?) {

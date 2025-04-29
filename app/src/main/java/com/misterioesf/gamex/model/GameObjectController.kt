@@ -59,6 +59,10 @@ class GameObjectController private constructor(val screenOffset: Point, context:
         gameObjects.forEach { view -> view.draw(canvas) }
     }
 
+    fun getGameObjects(): MutableList<GameObject> {
+        return gameObjects
+    }
+
     companion object {
         private var instance: GameObjectController? = null
 

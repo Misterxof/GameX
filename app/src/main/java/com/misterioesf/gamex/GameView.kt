@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.misterioesf.gamex.collisions.CollisionController
 import com.misterioesf.gamex.model.Apple
 import com.misterioesf.gamex.model.Collision
 import com.misterioesf.gamex.model.Event
@@ -33,6 +34,7 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     private var speedY: Float = 5f
     private lateinit var player: Player
     private lateinit var gameObjectController: GameObjectController
+    private lateinit var collisionController: CollisionController
     private val eventSubscriber = SubscribeHolder()
     private var gameEventListener: GameEventListener? = null
     var apple: Apple? = null
@@ -74,8 +76,11 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
 
     fun restart() {
         player = Player(Point(150f,150f),
-            Point(width / 2f, height / 2f), 14, this.context)
+            Point(width / 2f, height / 2f), 14, this.context) { gm ->
+            gameObjectController.addGameObject(gm)
+        }
         gameObjectController = GameObjectController.getInstance(player.offsetPoint, context)
+        collisionController = CollisionController(gameObjectController)
         walls.initWalls(mapWidth, mapHeight, player.offsetPoint)
         rect = Rect(700f - vecX, 700f - vecY, 700f + 200f - vecX, 700f + 200f - vecY, player.offsetPoint, context)
         eventSubscriber.subscribe(Event.COLLISION, player)
@@ -108,6 +113,7 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
     }
 
     fun collisionChecker() {
+        collisionController.checkAllCollisions()
         if (apple != null) {
             val playerPos = player.positionScreen
             val applePos = apple!!.positionScreen
@@ -145,7 +151,9 @@ class GameView : SurfaceView, SurfaceHolder.Callback, Subscriber {
         val playerPart = getScreenPart(player.positionMap, mapWidth.toInt(), mapHeight.toInt())
         val newPosition = randomPart(playerPart, mapWidth.toInt(), mapHeight.toInt())
         val screenAndMapPos = gameObjectController.getScreenPositionAndMapPos(newPosition)
-        enemy = Enemy(newPosition, screenAndMapPos.first, 7, context)
+        enemy = Enemy(newPosition, screenAndMapPos.first, 7, context) { gm ->
+            gameObjectController.addGameObject(gm)
+        }
         gameObjectController.addGameObject(enemy!!)
         eventSubscriber.subscribe(Event.COLLISION, enemy!!)
     }

@@ -2,8 +2,10 @@ package com.misterioesf.gamex
 
 import android.content.Context
 import android.util.Log
+import com.misterioesf.gamex.collisions.Collidable
 import com.misterioesf.gamex.model.Collision
 import com.misterioesf.gamex.model.Event
+import com.misterioesf.gamex.model.GameObject
 import com.misterioesf.gamex.model.Point
 import com.misterioesf.gamex.model.Type
 import kotlin.math.sqrt
@@ -12,9 +14,13 @@ class Enemy(
     startPos: Point,
     startScreenPos: Point,
     nextSegmentConst: Int,
-    context: Context
-) : Player(startPos, startScreenPos, nextSegmentConst, context) {
+    context: Context,
+    onNewGameObject: (gameObject: GameObject) -> Unit
+) : Player(startPos, startScreenPos, nextSegmentConst, context, onNewGameObject) {
     var applePosition: Point? = null
+    override val collisionType = Type.ENEMY
+    override val position = positionScreen
+    override val collisionRadius = 50f
 
     override fun updatePosition(pair: Point) {
         super.updatePosition(pair)
@@ -72,14 +78,33 @@ class Enemy(
                 if (type == Type.ENEMY) {
                     when (data as Collision) {
                         Collision.HEALS -> {
-                            Log.e("ENEMY", "COLLISION ${data.toString()}")
-                            addSegment()
+                          //  Log.e("ENEMY", "COLLISION ${data.toString()}")
+                            addSegment(Type.ENEMY_SEGMENT)
                         }
 
                         Collision.HIT -> TODO()
                     }
                 }
             }
+        }
+    }
+
+    override fun handleCollision(other: Collidable) {
+        Log.e("Enemy", "COLLISION enemy 1 ${other.collisionType}")
+        when (other.collisionType) {
+            Type.PLAYER -> {
+                Log.e("Enemy", "COLLISION enemy")
+            }
+            Type.HEALS -> {
+                Log.e("Enemy", "COLLISION enemy heals")
+            }
+            Type.WALL -> {
+
+            }
+            Type.PLAYER_SEGMENT -> {
+                Log.e("Enemy", "COLLISION enemy player segmetn")
+            }
+            else -> {}
         }
     }
 }

@@ -2,14 +2,16 @@ package com.misterioesf.gamex.model
 
 import android.content.Context
 import android.graphics.Canvas
+import com.misterioesf.gamex.collisions.Collidable
 
-class Walls(context: Context): GameObject(Point(0f, 0f), context) {
+class Walls(context: Context): GameObject(Point(0f, 0f), context, null) {
     override var type: Type = Type.WALL
     override var positionMap: Point = Point(0f, 0f)
-
-    override fun updatePosition(x: Float, y: Float) {
-
-    }
+    override val collisionType = Type.NEUTRAL
+    override val position = positionScreen
+    override val collisionRadius = 30f
+    override var isCollidable = false
+    override var gameObjects: MutableList<GameObject>? = null
 
     private lateinit var topWall: Rect
     private lateinit var bottomWall: Rect
@@ -28,6 +30,14 @@ class Walls(context: Context): GameObject(Point(0f, 0f), context) {
         bottomWall.update(vecX, vecY)
         leftWall.update(vecX, vecY)
         rightWall.update(vecX, vecY)
+    }
+
+    override fun updatePosition(x: Float, y: Float) {
+
+    }
+
+    override fun handleCollision(other: Collidable) {
+
     }
 
     override fun draw(canvas: Canvas?) {
